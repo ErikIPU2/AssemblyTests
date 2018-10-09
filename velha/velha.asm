@@ -7,23 +7,31 @@
 	
 	col: .asciiz "|"
 	
-	a1: .byte -1
-	a2: .byte 1
-	a3: .byte 1
+	a1: .byte 0
+	a2: .byte 0
+	a3: .byte 0
 	
-	b1: .byte 1
-	b2: .byte 1
-	b3: .byte 1
+	b1: .byte 0
+	b2: .byte 0
+	b3: .byte 0
 	
-	c1: .byte 1
-	c2: .byte 1
+	c1: .byte 0
+	c2: .byte 0
 	c3: .byte 0
+	
+	cont: .byte 0
 	
 	string1: .asciiz  "Jogador X, digite onde deseja jogar: "
 	string2: .asciiz  "Jogador O, digite onde deseja jogar: "
 	
 	error1: .asciiz "Valor digitado invalido\n"
 	error2: .asciiz "Ja existe uma peca nessa posicao\n"
+	
+	win1: .asciiz "X Ganhou!"
+	win2: .asciiz "O Ganhou!"
+	
+	velha1: .asciiz "Deu velha"
+	
 .text
 
 	li $s7, 1
@@ -217,9 +225,303 @@ end_vef:
 
 .macro x_put (%pos)
 
+	beq %pos, 1, x_a1 #verifica a1
+	beq %pos, 2, x_a2 #verifica a2
+	beq %pos, 3, x_a3 #verifica a3
+	
+	beq %pos, 4, x_b1 #verifica b1
+	beq %pos, 5, x_b2 #verifica b2
+	beq %pos, 6, x_b3 #verifica b3
+	
+	beq %pos, 7, x_c1 #verifica c1
+	beq %pos, 8, x_c2 #verifica c2
+	beq %pos, 9, x_c3 #verifica c3
+	
+	b end_put
+
+##################
+x_a1:
+	li $t9, 1
+	sb $t9, a1
+	j end_put
+#################
+
+x_a2:
+	li $t9, 1
+	sb $t9, a2
+	j end_put
+#################
+x_a3:
+	li $t9, 1
+	sb $t9, a3
+	j end_put
+#################
+x_b1:
+	li $t9, 1
+	sb $t9, b1
+	j end_put
+#################
+
+x_b2:
+	li $t9, 1
+	sb $t9, b2
+	j end_put
+#################
+x_b3:
+	li $t9, 1
+	sb $t9, b3
+	j end_put
+#################
+
+x_c1:
+	li $t9, 1
+	sb $t9, c1
+	j end_put
+#################
+
+x_c2:
+	li $t9, 1
+	sb $t9, c2
+	j end_put
+#################
+x_c3:
+	li $t9, 1
+	sb $t9, c3
+	j end_put
+#################
+end_put:
+
+	lb $t8, cont
+	add $t8, $t8, 1
+	
+	beq $t8, 9, velha
+	
+	sb $t8, cont
+	j end_all
+	
+velha:
+	li $v0, 4
+	la $a0, velha1
+	syscall
+	
+	li $v0, 10
+	syscall 
+	
+end_all:
+
+.end_macro
+
+.macro o_put (%pos)
+
+	beq %pos, 1, o_a1 #verifica a1
+	beq %pos, 2, o_a2 #verifica a2
+	beq %pos, 3, o_a3 #verifica a3
+	
+	beq %pos, 4, o_b1 #verifica b1
+	beq %pos, 5, o_b2 #verifica b2
+	beq %pos, 6, o_b3 #verifica b3
+	
+	beq %pos, 7, o_c1 #verifica c1
+	beq %pos, 8, o_c2 #verifica c2
+	beq %pos, 9, o_c3 #verifica c3
+	
+	b end_put
+	
+##################
+o_a1:
+	li $t9, -1
+	sb $t9, a1
+	j end_put
+#################
+
+o_a2:
+	li $t9, -1
+	sb $t9, a2
+	j end_put
+#################
+o_a3:
+	li $t9, -1
+	sb $t9, a3
+	j end_put
+#################
+o_b1:
+	li $t9, -1
+	sb $t9, b1
+	j end_put
+#################
+
+o_b2:
+	li $t9, -1
+	sb $t9, b2
+	j end_put
+#################
+o_b3:
+	li $t9, -1
+	sb $t9, b3
+	j end_put
+#################
+
+o_c1:
+	li $t9, -1
+	sb $t9, c1
+	j end_put
+#################
+
+o_c2:
+	li $t9, -1
+	sb $t9, c2
+	j end_put
+#################
+o_c3:
+	li $t9, -1
+	sb $t9, c3
+	j end_put
+#################
+end_put:
+	lb $t8, cont
+	add $t8, $t8, 1
+	
+	beq $t8, 9, velha
+	
+	sb $t8, cont
+	j end_all
+	
+velha:
+	li $v0, 4
+	la $a0, velha1
+	syscall
+	
+	li $v0, 10
+	syscall 
+	
+end_all:
+	
+	
+.end_macro
+
+.macro vefwin #Vefirica se alguem ganhou
+
+	#1---
+	lb $s0, a1
+	lb $s1, a2
+	lb $s2, a3
+	
+	add $s3, $s0, $s1
+	add $s3, $s3, $s2
+	
+	beq $s3, 3, xWin
+	beq $s3, -3, oWin
+
+	#2---
+	
+	lb $s0, b1
+	lb $s1, b2
+	lb $s2, b3
+	
+	add $s3, $s0, $s1
+	add $s3, $s3, $s2
+	
+	beq $s3, 3, xWin
+	beq $s3, -3, oWin
+	
+	#3---
+	
+	lb $s0, c1
+	lb $s1, c2
+	lb $s2, c3
+	
+	add $s3, $s0, $s1
+	add $s3, $s3, $s2
+	
+	beq $s3, 3, xWin
+	beq $s3, -3, oWin
+	
+	#1|||
+	
+	lb $s0, a1
+	lb $s1, b1
+	lb $s2, c1
+	
+	add $s3, $s0, $s1
+	add $s3, $s3, $s2
+	
+	beq $s3, 3, xWin
+	beq $s3, -3, oWin
+	
+	#2|||
+	
+	lb $s0, a2
+	lb $s1, b2
+	lb $s2, c2
+	
+	add $s3, $s0, $s1
+	add $s3, $s3, $s2
+	
+	beq $s3, 3, xWin
+	beq $s3, -3, oWin
+	
+	
+	#3|||
+	
+	lb $s0, a3
+	lb $s1, b3
+	lb $s2, c3
+	
+	add $s3, $s0, $s1
+	add $s3, $s3, $s2
+	
+	beq $s3, 3, xWin
+	beq $s3, -3, oWin
+	
+	#d1
+	
+	lb $s0, a1
+	lb $s1, b2
+	lb $s2, c3
+	
+	add $s3, $s0, $s1
+	add $s3, $s3, $s2
+	
+	beq $s3, 3, xWin
+	beq $s3, -3, oWin
+	
+	#d2
+	
+	lb $s0, a3
+	lb $s1, b2
+	lb $s2, c1
+	
+	add $s3, $s0, $s1
+	add $s3, $s3, $s2
+	
+	beq $s3, 3, xWin
+	beq $s3, -3, oWin
+	
+	
+	j end_vef
+	
+	
+xWin:
+
+	li $v0, 4
+	la $a0, win1
+	syscall
+	li $v0, 10
+	syscall
+
+oWin:
+
+	li $v0, 4
+	la $a0, win2
+	syscall
+	li $v0, 10
+	syscall
+	
+	
+end_vef:
+
 
 .end_macro 
-
 ########Inicio Do programa###########
 
 	printTab #imprime o tabuleiro inicial
@@ -230,6 +532,7 @@ end_vef:
 	syscall
 	
 ###############################
+sInput:
 
 xInput: li $v0, 4
 	la $a0, string1
@@ -240,20 +543,46 @@ xInput: li $v0, 4
 	move $t5, $v0
 	vefInputValue ($t5) #verifica se o input esta dentro do range
 	vefExistValue ($t5)
-	beq $v1, 1, xInput #se nao estiver vai repetir a operação
+	beq $v1, 1, xInput #se nao estiver vai repetir o input
+	x_put ($t5)
 endxInput:
 
 ###########################
+	
+	vefwin
 
-
-
+	printTab
+	
 	li $v0, 4
-	la $a0, x
-	syscall 
+	la $a0, nl
+	syscall
+	syscall
+	
+##########################
 
-	
+oInput: li $v0, 4
+	la $a0, string2
+	syscall
+	li $v0, 5
+	syscall
+	li $v1, 0
+	move $t5, $v0
+	vefInputValue($t5)
+	vefExistValue($t5)
+	beq $v1, 1, oInput
+	o_put ($t5)
+endoInput:
 
+###########################
+	vefwin
+
+	printTab
 	
+	li $v0, 4
+	la $a0, nl
+	syscall
+	syscall
 	
+##########################
 	
-	
+	j sInput
